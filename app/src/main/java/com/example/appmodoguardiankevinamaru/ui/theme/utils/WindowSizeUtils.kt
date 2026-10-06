@@ -1,13 +1,18 @@
-package com.example.appmodoguardiankevinamaru.ui.theme.utils
+package com.example.appmodoguardiankevinamaru.ui.utils
 
-import androidx.activity.compose.LocalActivity
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalConfiguration
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+enum class WindowSizeClass { Compact, Medium, Expanded }
+
 @Composable
-fun obtenerWindowSizeClass(): WindowSizeClass {
-    return calculateWindowSizeClass(LocalActivity.current as android.app.Activity)
+fun rememberWindowSizeClass(): WindowSizeClass {
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp
+
+    return when {
+        screenWidth < 600 -> WindowSizeClass.Compact
+        screenWidth < 840 -> WindowSizeClass.Medium
+        else -> WindowSizeClass.Expanded
+    }
 }
