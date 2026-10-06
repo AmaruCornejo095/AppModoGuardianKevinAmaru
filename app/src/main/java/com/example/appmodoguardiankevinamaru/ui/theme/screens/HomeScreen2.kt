@@ -35,11 +35,13 @@ fun HomeScreen2(
     val scope = rememberCoroutineScope()
 
     ModalNavigationDrawer(
+        modifier = Modifier.fillMaxSize(),
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
                 Text(text = "Menú Principal", modifier = Modifier.padding(16.dp))
                 HorizontalDivider()
+
                 NavigationDrawerItem(
                     label = { Text("Ir a Perfil") },
                     selected = false,
@@ -54,6 +56,22 @@ fun HomeScreen2(
                     onClick = {
                         scope.launch { drawerState.close() }
                         viewModel.navigateTo(Screen.Settings)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Ir a Registro") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        viewModel.navigateTo(Screen.Registro)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Ir a Resumen") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        viewModel.navigateTo(Screen.Resumen)
                     }
                 )
             }
