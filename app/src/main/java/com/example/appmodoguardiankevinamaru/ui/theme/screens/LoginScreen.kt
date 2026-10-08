@@ -24,7 +24,8 @@ import com.example.appmodoguardiankevinamaru.viewmodels.LoginViewModel
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel,
-    onLoginSuccess: (String) -> Unit
+    onLoginSuccess: (String) -> Unit,
+    onNavigateToRegister: () -> Unit
 ) {
     val windowSize = rememberWindowSizeClass()
 
@@ -37,7 +38,11 @@ fun LoginScreen(
         ) {
             when (windowSize) {
                 WindowSizeClass.Compact -> {
-                    LoginCompactContent(loginViewModel = loginViewModel, onLoginSuccess = onLoginSuccess)
+                    LoginCompactContent(
+                        loginViewModel = loginViewModel,
+                        onLoginSuccess = onLoginSuccess,
+                        onNavigateToRegister = onNavigateToRegister
+                    )
                 }
                 else -> {
                     Card(
@@ -46,7 +51,11 @@ fun LoginScreen(
                             .padding(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                     ) {
-                        LoginCompactContent(loginViewModel = loginViewModel, onLoginSuccess = onLoginSuccess)
+                        LoginCompactContent(
+                            loginViewModel = loginViewModel,
+                            onLoginSuccess = onLoginSuccess,
+                            onNavigateToRegister = onNavigateToRegister
+                        )
                     }
                 }
             }
@@ -57,7 +66,8 @@ fun LoginScreen(
 @Composable
 private fun LoginCompactContent(
     loginViewModel: LoginViewModel,
-    onLoginSuccess: (String) -> Unit
+    onLoginSuccess: (String) -> Unit,
+    onNavigateToRegister: () -> Unit
 ) {
     val uiState by loginViewModel.uiState.collectAsState()
 
@@ -141,6 +151,15 @@ private fun LoginCompactContent(
             } else {
                 Text("Ingresar")
             }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextButton(
+            onClick = onNavigateToRegister,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("¿No tienes cuenta? Regístrate aquí")
         }
     }
 }
