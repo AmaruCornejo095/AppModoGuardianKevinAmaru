@@ -20,6 +20,15 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
 
+    val handleLogout = {
+        loginViewModel.resetLoginState()
+        navController.navigate(Screen.Login.route) {
+            popUpTo(navController.graph.id) {
+                inclusive = true
+            }
+        }
+    }
+
     LaunchedEffect(key1 = Unit) {
         mainViewModel.navigationEvents.collectLatest { event ->
             when (event) {
@@ -60,17 +69,29 @@ fun AppNavigation(
         }
 
         composable(route = Screen.HomeAdmin.route) {
-            HomeAdminScreen(mainViewModel = mainViewModel)
+            HomeAdminScreen(
+                mainViewModel = mainViewModel,
+                onLogout = handleLogout
+            )
         }
         composable(route = Screen.HomeSupervisor.route) {
-            HomeSupervisorScreen(mainViewModel = mainViewModel)
+            HomeSupervisorScreen(
+                mainViewModel = mainViewModel,
+                onLogout = handleLogout
+            )
         }
         composable(route = Screen.HomeOperador.route) {
-            HomeOperadorScreen(mainViewModel = mainViewModel)
+            HomeOperadorScreen(
+                mainViewModel = mainViewModel,
+                onLogout = handleLogout
+            )
         }
 
         composable(route = Screen.Home.route) {
-            HomeScreen2(viewModel = mainViewModel)
+            HomeScreen2(
+                viewModel = mainViewModel,
+                onLogout = handleLogout
+            )
         }
         composable(route = Screen.Profile.route) {
             ProfileScreen(viewModel = mainViewModel)

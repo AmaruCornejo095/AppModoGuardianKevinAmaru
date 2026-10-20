@@ -20,8 +20,7 @@ class LoginViewModel(
         _uiState.update { currentState ->
             val emailError = if (newEmail.contains("@") || newEmail.isEmpty()) null else "Email inválido"
             val errores = currentState.errores.copy(emailError = emailError)
-            val updatedState = currentState.copy(email = newEmail, errores = errores, errorMessage = null)
-            updatedState.copy(isLoginEnabled = validarFormulario(updatedState))
+            currentState.copy(email = newEmail, errores = errores, errorMessage = null)
         }
     }
 
@@ -29,21 +28,41 @@ class LoginViewModel(
         _uiState.update { currentState ->
             val passError = if (newPassword.length >= 6 || newPassword.isEmpty()) null else "Mínimo 6 caracteres"
             val errores = currentState.errores.copy(passwordError = passError)
-            val updatedState = currentState.copy(password = newPassword, errores = errores, errorMessage = null)
-            updatedState.copy(isLoginEnabled = validarFormulario(updatedState))
+            currentState.copy(password = newPassword, errores = errores, errorMessage = null)
         }
     }
 
-    private fun validarFormulario(state: LoginUiState): Boolean {
-        return state.email.isNotBlank() &&
-                state.password.isNotBlank() &&
-                state.errores.emailError == null &&
-                state.errores.passwordError == null
-    }
-
     fun login(onSuccess: (String) -> Unit) {
+        val email = _uiState.value.email.trim()
+        val pass = _uiState.value.password.trim()
+
+        var emailErr: String? = null
+        var passErr: String? = null
+
+        if (email.isBlank()) {
+            emailErr = "El correo es obligatorio"
+        } else if (!email.contains("@")) {
+            emailErr = "Email inválido"
+        }
+
+        if (pass.isBlank()) {
+            passErr = "La contraseña es obligatoria"
+        } else if (pass.length < 6) {
+            passErr = "Mínimo 6 caracteres"
+        }
+
+        if (emailErr != null || passErr != null) {
+            _uiState.update {
+                it.copy(
+                    errores = LoginErrores(emailError = emailErr, passwordError = passErr),
+                    errorMessage = "Debe completar todos los campos correctamente"
+                )
+            }
+            return
+        }
+
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        val user = authRepository.login(_uiState.value.email, _uiState.value.password)
+        val user = authRepository.login(email, pass)
 
         if (user != null) {
             _uiState.update { it.copy(isLoading = false, userRole = user.role) }
@@ -56,5 +75,9 @@ class LoginViewModel(
                 )
             }
         }
+    }
+
+    fun resetLoginState() {
+        _uiState.value = LoginUiState()
     }
 }

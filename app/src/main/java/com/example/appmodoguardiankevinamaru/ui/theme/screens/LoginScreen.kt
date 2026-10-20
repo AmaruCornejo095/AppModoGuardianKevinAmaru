@@ -140,7 +140,7 @@ private fun LoginCompactContent(
 
         Button(
             onClick = { loginViewModel.login(onLoginSuccess) },
-            enabled = uiState.isLoginEnabled && !uiState.isLoading,
+            enabled = !uiState.isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
             if (uiState.isLoading) {
