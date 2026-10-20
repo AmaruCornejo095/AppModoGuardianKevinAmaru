@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.appmodoguardiankevinamaru.navigation.Screen
 import com.example.appmodoguardiankevinamaru.viewmodels.UsuarioViewModel
 
 @Composable
@@ -33,86 +34,80 @@ fun RegistroScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(all = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(space = 12.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Campo Nombre
         OutlinedTextField(
             value = estado.nombre,
             onValueChange = viewModel::onNombreChange,
-            label = { Text(text = "Nombre") },
+            label = { Text("Nombre") },
             isError = estado.errores.nombre != null,
             supportingText = {
                 estado.errores.nombre?.let {
-                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                    Text(it, color = MaterialTheme.colorScheme.error)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Campo Correo
         OutlinedTextField(
             value = estado.correo,
             onValueChange = viewModel::onCorreoChange,
-            label = { Text(text = "Correo electrónico") },
+            label = { Text("Correo electrónico") },
             isError = estado.errores.correo != null,
             supportingText = {
                 estado.errores.correo?.let {
-                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                    Text(it, color = MaterialTheme.colorScheme.error)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Campo Contraseña
         OutlinedTextField(
             value = estado.clave,
             onValueChange = viewModel::onClaveChange,
-            label = { Text(text = "Contraseña") },
+            label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             isError = estado.errores.clave != null,
             supportingText = {
                 estado.errores.clave?.let {
-                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                    Text(it, color = MaterialTheme.colorScheme.error)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Campo Dirección
         OutlinedTextField(
             value = estado.direccion,
             onValueChange = viewModel::onDireccionChange,
-            label = { Text(text = "Dirección") },
+            label = { Text("Dirección") },
             isError = estado.errores.direccion != null,
             supportingText = {
                 estado.errores.direccion?.let {
-                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                    Text(it, color = MaterialTheme.colorScheme.error)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Checkbox Términos
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
                 checked = estado.aceptaTerminos,
                 onCheckedChange = viewModel::onAceptaTerminosChange
             )
-            Spacer(modifier = Modifier.width(width = 8.dp))
-            Text(text = "Acepto los términos y condiciones")
+            Spacer(Modifier.width(8.dp))
+            Text("Acepto los términos y condiciones")
         }
 
-        // Botón Registrar
         Button(
             onClick = {
                 if (viewModel.validarFormulario()) {
-                    navController.navigate(route = "resumen")
+                    navController.navigate(Screen.Resumen.route)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Registrar")
+            Text("Registrar")
         }
     }
 }
