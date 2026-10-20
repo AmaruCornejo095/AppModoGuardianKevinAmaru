@@ -3,37 +3,26 @@ package com.example.appmodoguardiankevinamaru
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
+import com.example.appmodoguardiankevinamaru.data.AppDatabase
+import com.example.appmodoguardiankevinamaru.data.EstadoDataStore
 import com.example.appmodoguardiankevinamaru.navigation.AppNavigation
 import com.example.appmodoguardiankevinamaru.ui.theme.AppModoGuardianKevinAmaruTheme
+import com.example.appmodoguardiankevinamaru.viewmodels.UsuarioViewModel
+import com.example.appmodoguardiankevinamaru.viewmodels.UsuarioViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        val database = AppDatabase.getDatabase(applicationContext)
+        val dataStore = EstadoDataStore(applicationContext)
+        val factory = UsuarioViewModelFactory(database.usuarioDao(), dataStore)
+        val viewModel = ViewModelProvider(this, factory)[UsuarioViewModel::class.java]
+
         setContent {
             AppModoGuardianKevinAmaruTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(innerPadding)
-                        ) {
-                            AppNavigation()
-                        }
-                    }
-                }
+                AppNavigation(viewModel = viewModel)
             }
         }
     }

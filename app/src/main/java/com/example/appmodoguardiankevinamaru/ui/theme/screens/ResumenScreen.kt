@@ -1,9 +1,7 @@
 package com.example.appmodoguardiankevinamaru.ui.theme.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,19 +11,47 @@ import com.example.appmodoguardiankevinamaru.viewmodels.UsuarioViewModel
 
 @Composable
 fun ResumenScreen(viewModel: UsuarioViewModel) {
-    val estado by viewModel.estado.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
-    Column(modifier = Modifier.padding(all = 16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         Text(
-            text = "Resumen del Registro",
+            text = "Resumen del Sistema",
             style = MaterialTheme.typography.headlineMedium
         )
-        Text(text = "Nombre: ${estado.nombre}")
-        Text(text = "Correo: ${estado.correo}")
-        Text(text = "Dirección: ${estado.direccion}")
-        Text(text = "Contraseña: ${"*".repeat(estado.clave.length)}")
-        Text(
-            text = "Términos: ${if (estado.aceptaTerminos) "Aceptados" else "No aceptados"}"
-        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Total de Usuarios Registrados:",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "${uiState.listaUsuarios.size}",
+                    style = MaterialTheme.typography.headlineLarge
+                )
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Estado del Modo Especial (DataStore):",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = if (uiState.modoEspecial) "ACTIVADO" else "DESACTIVADO",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
     }
 }

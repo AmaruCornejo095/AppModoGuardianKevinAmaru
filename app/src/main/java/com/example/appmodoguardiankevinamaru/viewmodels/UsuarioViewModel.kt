@@ -1,54 +1,75 @@
 package com.example.appmodoguardiankevinamaru.viewmodels
 
 import androidx.lifecycle.ViewModel
-import com.example.appmodoguardiankevinamaru.model.UsuarioErrores
-import com.example.appmodoguardiankevinamaru.model.UsuarioUiState
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.appmodoguardiankevinamaru.data.EstadoDataStore
+import com.example.appmodoguardiankevinamaru.data.UsuarioDao
+import com.example.appmodoguardiankevinamaru.model.UsuarioEntity
+import com.example.appmodoguardiankevinamaru.repository.AuthRepository
+import com.example.appmodoguardiankevinamaru.repository.UserData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class UsuarioViewModel : ViewModel() {
+data class UsuarioUiState(
+    val listaUsuarios: List<UsuarioEntity> = emptyList(),
+    val modoEspecial: Boolean = false,
+    val usuarioAutenticado: UserData? = null
+)
 
-    private val _estado = MutableStateFlow(UsuarioUiState())
-    val estado: StateFlow<UsuarioUiState> = _estado
+class UsuarioViewModel(
+    private val usuarioDao: UsuarioDao,
+    private val estadoDataStore: EstadoDataStore,
+    val authRepository: AuthRepository = AuthRepository()
+) : ViewModel() {
 
-    fun onNombreChange(valor: String) {
-        _estado.update { it.copy(nombre = valor, errores = it.errores.copy(nombre = null)) }
+    private val _uiState = MutableStateFlow(UsuarioUiState())
+    val uiState: StateFlow<UsuarioUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            usuarioDao.obtenerTodos().collect { usuarios ->
+                _uiState.update { it.copy(listaUsuarios = usuarios) }
+            }
+        }
+        viewModelScope.launch {
+            estadoDataStore.modoEspecialFlow.collect { modo ->
+                _uiState.update { it.copy(modoEspecial = modo) }
+            }
+        }
     }
 
-    fun onCorreoChange(valor: String) {
-        _estado.update { it.copy(correo = valor, errores = it.errores.copy(correo = null)) }
+    fun guardarUsuario(usuario: UsuarioEntity) {
+        viewModelScope.launch {
+            usuarioDao.insertar(usuario)
+        }
     }
 
-    fun onClaveChange(valor: String) {
-        _estado.update { it.copy(clave = valor, errores = it.errores.copy(clave = null)) }
+    fun eliminarUsuario(usuario: UsuarioEntity) {
+        viewModelScope.launch {
+            usuarioDao.eliminar(usuario)
+        }
     }
 
-    fun onDireccionChange(valor: String) {
-        _estado.update { it.copy(direccion = valor, errores = it.errores.copy(direccion = null)) }
+    fun toggleModoEspecial(activo: Boolean) {
+        viewModelScope.launch {
+            estadoDataStore.guardarModoEspecial(activo)
+        }
     }
+}
 
-    fun onAceptaTerminosChange(valor: Boolean) {
-        _estado.update { it.copy(aceptaTerminos = valor) }
-    }
-
-    fun validarFormulario(): Boolean {
-        val estadoActual = _estado.value
-        val errores = UsuarioErrores(
-            nombre = if (estadoActual.nombre.isBlank()) "Campo obligatorio" else null,
-            correo = if (!estadoActual.correo.contains("@")) "Correo inválido" else null,
-            clave = if (estadoActual.clave.length < 6) "Debe tener al menos 6 caracteres" else null,
-            direccion = if (estadoActual.direccion.isBlank()) "Campo obligatorio" else null
-        )
-
-        val hayErrores = listOfNotNull(
-            errores.nombre,
-            errores.correo,
-            errores.clave,
-            errores.direccion
-        ).isNotEmpty()
-
-        _estado.update { it.copy(errores = errores) }
-        return !hayErrores
+class UsuarioViewModelFactory(
+    private val usuarioDao: UsuarioDao,
+    private val estadoDataStore: EstadoDataStore
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(UsuarioViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return UsuarioViewModel(usuarioDao, estadoDataStore) as T
+        }
+        throw IllegalArgumentException("Clase ViewModel desconocida")
     }
 }

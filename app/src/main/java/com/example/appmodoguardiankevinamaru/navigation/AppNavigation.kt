@@ -1,204 +1,175 @@
 package com.example.appmodoguardiankevinamaru.navigation
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.appmodoguardiankevinamaru.ui.theme.screens.*
-import com.example.appmodoguardiankevinamaru.viewmodels.LoginViewModel
-import com.example.appmodoguardiankevinamaru.viewmodels.MainViewModel
 import com.example.appmodoguardiankevinamaru.viewmodels.UsuarioViewModel
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+sealed class AppScreen(val route: String) {
+    object Login : AppScreen("login")
+    object ModoGuardian : AppScreen("modo_guardian")
+    object Perfil : AppScreen("perfil")
+    object Configuracion : AppScreen("configuracion")
+    object Registro : AppScreen("registro")
+    object Resumen : AppScreen("resumen")
+    object Listado : AppScreen("listado")
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation(
-    mainViewModel: MainViewModel = viewModel(),
-    usuarioViewModel: UsuarioViewModel = viewModel(),
-    loginViewModel: LoginViewModel = viewModel()
-) {
+fun AppNavigation(viewModel: UsuarioViewModel) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val handleLogout = {
-        loginViewModel.resetLoginState()
-        navController.navigate(Screen.Login.route) {
-            popUpTo(navController.graph.id) {
-                inclusive = true
-            }
-        }
-    }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
-    LaunchedEffect(key1 = Unit) {
-        mainViewModel.navigationEvents.collectLatest { event ->
-            when (event) {
-                is NavigationEvent.NavigateTo -> {
-                    navController.navigate(event.route.route) {
-                        event.popupToRoute?.let {
-                            popUpTo(it.route) {
-                                inclusive = event.inclusive
+    val mostrarDrawer = currentRoute != AppScreen.Login.route
+
+    if (mostrarDrawer) {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet {
+                    Text(
+                        text = "Menú Principal",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    NavigationDrawerItem(
+                        label = { Text("Ir a Modo Guardián") },
+                        selected = currentRoute == AppScreen.ModoGuardian.route,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(AppScreen.ModoGuardian.route)
+                        }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Ir a Perfil") },
+                        selected = currentRoute == AppScreen.Perfil.route,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(AppScreen.Perfil.route)
+                        }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Ir a Configuración") },
+                        selected = currentRoute == AppScreen.Configuracion.route,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(AppScreen.Configuracion.route)
+                        }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Ir a Registro") },
+                        selected = currentRoute == AppScreen.Registro.route,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(AppScreen.Registro.route)
+                        }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Ir a Resumen") },
+                        selected = currentRoute == AppScreen.Resumen.route,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(AppScreen.Resumen.route)
+                        }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Ir a Listado Offline") },
+                        selected = currentRoute == AppScreen.Listado.route,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(AppScreen.Listado.route)
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+                    HorizontalDivider()
+
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+                        label = { Text("Cerrar Sesión", color = MaterialTheme.colorScheme.error) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(AppScreen.Login.route) {
+                                popUpTo(0) { inclusive = true }
                             }
                         }
-                        launchSingleTop = event.singleTop
+                    )
+                }
+            }
+        ) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("Modo Guardián") },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Menú")
+                            }
+                        }
+                    )
+                }
+            ) { innerPadding ->
+                NavHost(
+                    navController = navController,
+                    startDestination = AppScreen.ModoGuardian.route,
+                    modifier = Modifier.padding(innerPadding)
+                ) {
+                    composable(AppScreen.Login.route) {
+                        // Vista de Login opcional
+                    }
+                    composable(AppScreen.ModoGuardian.route) {
+                        ModoGuardianScreen(viewModel = viewModel)
+                    }
+                    composable(AppScreen.Perfil.route) {
+                        PerfilScreen(viewModel = viewModel)
+                    }
+                    composable(AppScreen.Configuracion.route) {
+                        ConfiguracionScreen(viewModel = viewModel)
+                    }
+                    composable(AppScreen.Registro.route) {
+                        RegistroScreen(
+                            viewModel = viewModel,
+                            onRegistroExitoso = { navController.navigate(AppScreen.Resumen.route) }
+                        )
+                    }
+                    composable(AppScreen.Resumen.route) {
+                        ResumenScreen(viewModel = viewModel)
+                    }
+                    composable(AppScreen.Listado.route) {
+                        ListadoOfflineScreen(viewModel = viewModel)
                     }
                 }
-                is NavigationEvent.PopBackStack -> navController.popBackStack()
-                is NavigationEvent.NavigateUp -> navController.navigateUp()
             }
         }
-    }
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                Text(
-                    text = "Menú Principal",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(16.dp)
-                )
-                HorizontalDivider()
-                NavigationDrawerItem(
-                    label = { Text("Ir a Modo Guardián") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Estado.route)
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Ir a Perfil") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Profile.route)
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Ir a Configuración") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Settings.route)
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Ir a Registro") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Registro.route)
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Ir a Resumen") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Resumen.route)
-                    }
-                )
-                HorizontalDivider()
-                NavigationDrawerItem(
-                    label = { Text("Cerrar Sesión", color = MaterialTheme.colorScheme.error) },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Cerrar Sesión",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        handleLogout()
-                    }
-                )
-            }
-        }
-    ) {
+    } else {
         NavHost(
             navController = navController,
-            startDestination = Screen.Login.route
+            startDestination = AppScreen.ModoGuardian.route
         ) {
-            composable(route = Screen.Login.route) {
-                LoginScreen(
-                    loginViewModel = loginViewModel,
-                    onLoginSuccess = { role ->
-                        when (role) {
-                            "Admin" -> navController.navigate(Screen.HomeAdmin.route)
-                            "Supervisor" -> navController.navigate(Screen.HomeSupervisor.route)
-                            "Operador" -> navController.navigate(Screen.HomeOperador.route)
-                        }
-                    },
-                    onNavigateToRegister = {
-                        navController.navigate(Screen.Registro.route)
-                    }
-                )
-            }
-
-            composable(route = Screen.HomeAdmin.route) {
-                HomeAdminScreen(
-                    mainViewModel = mainViewModel,
-                    onLogout = handleLogout
-                )
-            }
-            composable(route = Screen.HomeSupervisor.route) {
-                HomeSupervisorScreen(
-                    mainViewModel = mainViewModel,
-                    onLogout = handleLogout
-                )
-            }
-            composable(route = Screen.HomeOperador.route) {
-                HomeOperadorScreen(
-                    mainViewModel = mainViewModel,
-                    onLogout = handleLogout
-                )
-            }
-
-            composable(route = Screen.Home.route) {
-                HomeScreen2(
-                    viewModel = mainViewModel,
-                    onLogout = handleLogout
-                )
-            }
-            composable(route = Screen.Profile.route) {
-                ProfileScreen(
-                    viewModel = mainViewModel,
-                    onOpenDrawer = {
-                        scope.launch { drawerState.open() }
-                    }
-                )
-            }
-            composable(route = Screen.Settings.route) {
-                SettingsScreen(viewModel = mainViewModel)
-            }
-            composable(route = Screen.Registro.route) {
-                RegistroScreen(navController = navController, viewModel = usuarioViewModel)
-            }
-            composable(route = Screen.Resumen.route) {
-                ResumenScreen(viewModel = usuarioViewModel)
-            }
-            composable(route = Screen.Estado.route) {
-                PantallaPrincipal()
+            composable(AppScreen.ModoGuardian.route) {
+                ModoGuardianScreen(viewModel = viewModel)
             }
         }
     }
