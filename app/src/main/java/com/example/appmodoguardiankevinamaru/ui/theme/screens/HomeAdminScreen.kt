@@ -10,10 +10,16 @@ import com.example.appmodoguardiankevinamaru.navigation.Screen
 import com.example.appmodoguardiankevinamaru.viewmodels.MainViewModel
 
 @Composable
-fun HomeAdminScreen(mainViewModel: MainViewModel) {
+fun HomeAdminScreen(
+    mainViewModel: MainViewModel,
+    onLogout: () -> Unit
+) {
     Scaffold { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -21,6 +27,15 @@ fun HomeAdminScreen(mainViewModel: MainViewModel) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = { mainViewModel.navigateTo(Screen.Home) }) {
                 Text("Ir a App Principal (Modo Guardián)")
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(
+                onClick = onLogout,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Cerrar Sesión")
             }
         }
     }
