@@ -105,5 +105,8 @@ fun AppNavigation(
         composable(route = Screen.Resumen.route) {
             ResumenScreen(viewModel = usuarioViewModel)
         }
+        composable(route = Screen.Estado.route) {
+            PantallaPrincipal()
+        }
     }
 }
