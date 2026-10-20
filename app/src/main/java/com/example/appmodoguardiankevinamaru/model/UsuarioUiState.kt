@@ -1,6 +1,6 @@
 package com.example.appmodoguardiankevinamaru.model
 
-// Modelo que almacena posibles errores individuales del formulario
+
 data class UsuarioErrores(
     val nombre: String? = null,
     val correo: String? = null,
@@ -8,7 +8,7 @@ data class UsuarioErrores(
     val direccion: String? = null
 )
 
-// Modelo principal que representa el estado del formulario del usuario
+
 data class UsuarioUiState(
     val nombre: String = "",
     val correo: String = "",

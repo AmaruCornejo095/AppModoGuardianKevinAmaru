@@ -9,38 +9,29 @@ import kotlinx.coroutines.flow.update
 
 class UsuarioViewModel : ViewModel() {
 
-    // Estado interno mutable
     private val _estado = MutableStateFlow(UsuarioUiState())
-
-    // Estado expuesto para la UI
     val estado: StateFlow<UsuarioUiState> = _estado
 
-    // Actualiza el campo nombre y limpia su error
     fun onNombreChange(valor: String) {
         _estado.update { it.copy(nombre = valor, errores = it.errores.copy(nombre = null)) }
     }
 
-    // Actualiza el campo correo
     fun onCorreoChange(valor: String) {
         _estado.update { it.copy(correo = valor, errores = it.errores.copy(correo = null)) }
     }
 
-    // Actualiza el campo clave
     fun onClaveChange(valor: String) {
         _estado.update { it.copy(clave = valor, errores = it.errores.copy(clave = null)) }
     }
 
-    // Actualiza el campo dirección
     fun onDireccionChange(valor: String) {
         _estado.update { it.copy(direccion = valor, errores = it.errores.copy(direccion = null)) }
     }
 
-    // Actualiza checkbox de aceptación
     fun onAceptaTerminosChange(valor: Boolean) {
         _estado.update { it.copy(aceptaTerminos = valor) }
     }
 
-    // Validación global del formulario
     fun validarFormulario(): Boolean {
         val estadoActual = _estado.value
         val errores = UsuarioErrores(
