@@ -10,7 +10,10 @@ import androidx.compose.ui.unit.dp
 import com.example.appmodoguardiankevinamaru.viewmodels.UsuarioViewModel
 
 @Composable
-fun ResumenScreen(viewModel: UsuarioViewModel) {
+fun ResumenScreen(
+    viewModel: UsuarioViewModel,
+    onNavigateToLogin: () -> Unit = {}
+) {
     val uiState by viewModel.uiState.collectAsState()
 
     Column(
@@ -52,6 +55,15 @@ fun ResumenScreen(viewModel: UsuarioViewModel) {
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = onNavigateToLogin,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Ir a Iniciar Sesión")
         }
     }
 }

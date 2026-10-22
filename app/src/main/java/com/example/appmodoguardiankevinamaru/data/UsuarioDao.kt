@@ -18,4 +18,7 @@ interface UsuarioDao {
 
     @Delete
     suspend fun eliminar(usuario: UsuarioEntity)
+
+    @Query("SELECT * FROM usuarios WHERE correo = :correo AND contrasena = :contrasena LIMIT 1")
+    suspend fun validarLogin(correo: String, contrasena: String): UsuarioEntity?
 }

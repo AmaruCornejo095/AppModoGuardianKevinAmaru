@@ -1,17 +1,20 @@
 package com.example.appmodoguardiankevinamaru.viewmodels
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.appmodoguardiankevinamaru.data.AppDatabase
 import com.example.appmodoguardiankevinamaru.model.LoginErrores
 import com.example.appmodoguardiankevinamaru.model.LoginUiState
-import com.example.appmodoguardiankevinamaru.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class LoginViewModel(
-    private val authRepository: AuthRepository = AuthRepository()
-) : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val usuarioDao = AppDatabase.getDatabase(application).usuarioDao()
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
@@ -62,17 +65,21 @@ class LoginViewModel(
         }
 
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        val user = authRepository.login(email, pass)
 
-        if (user != null) {
-            _uiState.update { it.copy(isLoading = false, userRole = user.role) }
-            onSuccess(user.role)
-        } else {
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    errorMessage = "Credenciales incorrectas"
-                )
+        viewModelScope.launch {
+            val usuarioEncontrado = usuarioDao.validarLogin(email, pass)
+
+            if (usuarioEncontrado != null) {
+                val userRole = if (usuarioEncontrado.modoEspecial) "ADMIN" else "USER"
+                _uiState.update { it.copy(isLoading = false, userRole = userRole) }
+                onSuccess(userRole)
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = "Credenciales incorrectas"
+                    )
+                }
             }
         }
     }
