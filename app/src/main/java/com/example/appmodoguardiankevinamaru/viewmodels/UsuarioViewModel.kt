@@ -3,14 +3,18 @@ package com.example.appmodoguardiankevinamaru.viewmodels
 import androidx.lifecycle.ViewModel
 import com.example.appmodoguardiankevinamaru.model.UsuarioErrores
 import com.example.appmodoguardiankevinamaru.model.UsuarioUiState
+import com.example.appmodoguardiankevinamaru.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class UsuarioViewModel : ViewModel() {
+class UsuarioViewModel(
+    private val authRepository: AuthRepository = AuthRepository()
+) : ViewModel() {
 
     private val _estado = MutableStateFlow(UsuarioUiState())
-    val estado: StateFlow<UsuarioUiState> = _estado
+    val estado: StateFlow<UsuarioUiState> = _estado.asStateFlow()
 
     fun onNombreChange(valor: String) {
         _estado.update { it.copy(nombre = valor, errores = it.errores.copy(nombre = null)) }
@@ -32,6 +36,52 @@ class UsuarioViewModel : ViewModel() {
         _estado.update { it.copy(aceptaTerminos = valor) }
     }
 
+    fun registrarConGoogle(onSuccess: () -> Unit) {
+        val correo = "usuario.google@gmail.com"
+        val nombre = "Usuario Google"
+
+        authRepository.registerUser(
+            email = correo,
+            pass = "GoogleOAuth2026",
+            name = nombre,
+            role = "Operador"
+        )
+
+        _estado.update {
+            it.copy(
+                nombre = nombre,
+                correo = correo,
+                clave = "••••••••",
+                direccion = "Autenticado con Google Account",
+                aceptaTerminos = true
+            )
+        }
+        onSuccess()
+    }
+
+    fun registrarConApple(onSuccess: () -> Unit) {
+        val correo = "usuario.apple@icloud.com"
+        val nombre = "Usuario Apple"
+
+        authRepository.registerUser(
+            email = correo,
+            pass = "AppleOAuth2026",
+            name = nombre,
+            role = "Operador"
+        )
+
+        _estado.update {
+            it.copy(
+                nombre = nombre,
+                correo = correo,
+                clave = "••••••••",
+                direccion = "Autenticado con Apple ID",
+                aceptaTerminos = true
+            )
+        }
+        onSuccess()
+    }
+
     fun validarFormulario(): Boolean {
         val estadoActual = _estado.value
         val errores = UsuarioErrores(
@@ -41,7 +91,7 @@ class UsuarioViewModel : ViewModel() {
             direccion = if (estadoActual.direccion.isBlank()) "Campo obligatorio" else null
         )
 
-        val hayErrores = listOfNotNull(
+        val hayErroresCampos = listOfNotNull(
             errores.nombre,
             errores.correo,
             errores.clave,
@@ -49,6 +99,18 @@ class UsuarioViewModel : ViewModel() {
         ).isNotEmpty()
 
         _estado.update { it.copy(errores = errores) }
-        return !hayErrores
+
+        if (hayErroresCampos || !estadoActual.aceptaTerminos) {
+            return false
+        }
+
+        authRepository.registerUser(
+            email = estadoActual.correo,
+            pass = estadoActual.clave,
+            name = estadoActual.nombre,
+            role = "Operador"
+        )
+
+        return true
     }
 }
