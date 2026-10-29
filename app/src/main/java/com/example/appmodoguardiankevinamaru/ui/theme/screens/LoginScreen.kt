@@ -79,11 +79,11 @@ private fun LoginCompactContent(
         verticalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+            painter = painterResource(id = R.drawable.logo_mg),
             contentDescription = "Logo Modo Guardián",
             modifier = Modifier
-                .size(100.dp)
-                .padding(bottom = 8.dp)
+                .size(135.dp)
+                .padding(bottom = 12.dp)
         )
 
         Text(
