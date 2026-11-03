@@ -1,21 +1,14 @@
 package com.example.appmodoguardiankevinamaru.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,54 +20,34 @@ import com.example.appmodoguardiankevinamaru.ui.theme.screens.*
 import com.example.appmodoguardiankevinamaru.viewmodels.LoginViewModel
 import com.example.appmodoguardiankevinamaru.viewmodels.MainViewModel
 import com.example.appmodoguardiankevinamaru.viewmodels.UsuarioViewModel
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+sealed class AppScreen(val route: String) {
+    object Login : AppScreen("login")
+    object ModoGuardian : AppScreen("modo_guardian")
+    object Perfil : AppScreen("perfil")
+    object Configuracion : AppScreen("configuracion")
+    object Registro : AppScreen("registro")
+    object Resumen : AppScreen("resumen")
+    object PanelPrincipal : AppScreen("panel_principal")
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation(
-    mainViewModel: MainViewModel = viewModel(),
-    usuarioViewModel: UsuarioViewModel = viewModel(),
-    loginViewModel: LoginViewModel = viewModel()
-) {
+fun AppNavigation(viewModel: UsuarioViewModel = viewModel()) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val rutaActual = navBackStackEntry?.destination?.route
-    val gesturesEnabled = rutaActual != Screen.Login.route && rutaActual != Screen.Registro.route
+    // 1. Fallback inicial configurado en Login
+    val currentRoute = navBackStackEntry?.destination?.route ?: AppScreen.Login.route
 
-    val handleLogout = {
-        loginViewModel.resetLoginState()
-        navController.navigate(Screen.Login.route) {
-            popUpTo(navController.graph.id) {
-                inclusive = true
-            }
-        }
-    }
-
-    LaunchedEffect(key1 = Unit) {
-        mainViewModel.navigationEvents.collectLatest { event ->
-            when (event) {
-                is NavigationEvent.NavigateTo -> {
-                    navController.navigate(event.route.route) {
-                        event.popupToRoute?.let {
-                            popUpTo(it.route) {
-                                inclusive = event.inclusive
-                            }
-                        }
-                        launchSingleTop = event.singleTop
-                    }
-                }
-                is NavigationEvent.PopBackStack -> navController.popBackStack()
-                is NavigationEvent.NavigateUp -> navController.navigateUp()
-            }
-        }
-    }
+    val mostrarDrawer = currentRoute != AppScreen.Login.route && currentRoute != AppScreen.Registro.route
 
     ModalNavigationDrawer(
+        gesturesEnabled = mostrarDrawer,
         drawerState = drawerState,
-        gesturesEnabled = gesturesEnabled,
         drawerContent = {
             ModalDrawerSheet {
                 Text(
@@ -83,129 +56,133 @@ fun AppNavigation(
                     modifier = Modifier.padding(16.dp)
                 )
                 HorizontalDivider()
+                Spacer(modifier = Modifier.height(8.dp))
+
                 NavigationDrawerItem(
-                    label = { Text("Ir a Modo Guardián") },
-                    selected = false,
+                    label = { Text("Ir a Panel Principal") },
+                    selected = currentRoute == AppScreen.PanelPrincipal.route,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Estado.route)
+                        navController.navigate(AppScreen.PanelPrincipal.route)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Ir a Modo Guardián") },
+                    selected = currentRoute == AppScreen.ModoGuardian.route,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(AppScreen.ModoGuardian.route)
                     }
                 )
                 NavigationDrawerItem(
                     label = { Text("Ir a Perfil") },
-                    selected = false,
+                    selected = currentRoute == AppScreen.Perfil.route,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Profile.route)
+                        navController.navigate(AppScreen.Perfil.route)
                     }
                 )
                 NavigationDrawerItem(
                     label = { Text("Ir a Configuración") },
-                    selected = false,
+                    selected = currentRoute == AppScreen.Configuracion.route,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Settings.route)
+                        navController.navigate(AppScreen.Configuracion.route)
                     }
                 )
                 NavigationDrawerItem(
                     label = { Text("Ir a Registro") },
-                    selected = false,
+                    selected = currentRoute == AppScreen.Registro.route,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Registro.route)
+                        navController.navigate(AppScreen.Registro.route)
                     }
                 )
                 NavigationDrawerItem(
                     label = { Text("Ir a Resumen") },
-                    selected = false,
+                    selected = currentRoute == AppScreen.Resumen.route,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate(Screen.Resumen.route)
+                        navController.navigate(AppScreen.Resumen.route)
                     }
                 )
+
+                Spacer(modifier = Modifier.weight(1f))
                 HorizontalDivider()
+
                 NavigationDrawerItem(
-                    label = { Text("Cerrar Sesión", color = MaterialTheme.colorScheme.error) },
                     icon = {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Cerrar Sesión",
-                            tint = MaterialTheme.colorScheme.error
+                            contentDescription = "Cerrar Sesión"
                         )
                     },
+                    label = { Text("Cerrar Sesión") },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        handleLogout()
+                        navController.navigate(AppScreen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 )
             }
         }
     ) {
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Login.route
-        ) {
-            composable(route = Screen.Login.route) {
-                LoginScreen(
-                    loginViewModel = loginViewModel,
-                    onLoginSuccess = { role ->
-                        when (role) {
-                            "Admin" -> navController.navigate(Screen.HomeAdmin.route)
-                            "Supervisor" -> navController.navigate(Screen.HomeSupervisor.route)
-                            "Operador" -> navController.navigate(Screen.HomeOperador.route)
+        Scaffold(
+            topBar = {
+                if (mostrarDrawer) {
+                    TopAppBar(
+                        title = { Text("Modo Guardián") },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Menú")
+                            }
                         }
-                    },
-                    onNavigateToRegister = {
-                        navController.navigate(Screen.Registro.route)
-                    }
-                )
+                    )
+                }
             }
-
-            composable(route = Screen.HomeAdmin.route) {
-                HomeAdminScreen(
-                    mainViewModel = mainViewModel,
-                    onLogout = handleLogout
-                )
-            }
-            composable(route = Screen.HomeSupervisor.route) {
-                HomeSupervisorScreen(
-                    mainViewModel = mainViewModel,
-                    onLogout = handleLogout
-                )
-            }
-            composable(route = Screen.HomeOperador.route) {
-                HomeOperadorScreen(
-                    mainViewModel = mainViewModel,
-                    onLogout = handleLogout
-                )
-            }
-
-            composable(route = Screen.Home.route) {
-                HomeScreen2(
-                    viewModel = mainViewModel,
-                    onLogout = handleLogout
-                )
-            }
-            composable(route = Screen.Profile.route) {
-                ProfileScreen(
-                    viewModel = mainViewModel,
-                    onOpenDrawer = {
-                        scope.launch { drawerState.open() }
-                    }
-                )
-            }
-            composable(route = Screen.Settings.route) {
-                SettingsScreen(viewModel = mainViewModel)
-            }
-            composable(route = Screen.Registro.route) {
-                RegistroScreen(navController = navController, viewModel = usuarioViewModel)
-            }
-            composable(route = Screen.Resumen.route) {
-                ResumenScreen(viewModel = usuarioViewModel)
-            }
-            composable(route = Screen.Estado.route) {
-                PantallaPrincipal()
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                // 2. Destino inicial configurado en Login
+                startDestination = AppScreen.Login.route,
+                modifier = Modifier.padding(if (mostrarDrawer) innerPadding else PaddingValues(0.dp))
+            ) {
+                composable(AppScreen.Login.route) {
+                    val loginViewModel: LoginViewModel = viewModel()
+                    LoginScreen(
+                        loginViewModel = loginViewModel,
+                        onNavigateToRegister = { navController.navigate(AppScreen.Registro.route) },
+                        onLoginSuccess = { navController.navigate(AppScreen.PanelPrincipal.route) }
+                    )
+                }
+                composable(AppScreen.Registro.route) {
+                    RegistroScreen(
+                        navController = navController,
+                        viewModel = viewModel
+                    )
+                }
+                composable(AppScreen.PanelPrincipal.route) {
+                    PantallaPrincipal()
+                }
+                composable(AppScreen.ModoGuardian.route) {
+                    HomeScreen()
+                }
+                composable(AppScreen.Perfil.route) {
+                    val mainViewModel: MainViewModel = viewModel()
+                    ProfileScreen(
+                        viewModel = mainViewModel,
+                        onOpenDrawer = { scope.launch { drawerState.open() } }
+                    )
+                }
+                composable(AppScreen.Configuracion.route) {
+                    val mainViewModel: MainViewModel = viewModel()
+                    SettingsScreen(viewModel = mainViewModel)
+                }
+                composable(AppScreen.Resumen.route) {
+                    ResumenScreen(viewModel = viewModel)
+                }
             }
         }
     }
